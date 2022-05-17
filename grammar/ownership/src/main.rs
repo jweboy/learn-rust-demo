@@ -33,37 +33,62 @@ fn main() {
     let y = x;
     println!("{}, {}", x, y);
 
-    let s = String::from("Hello, world!");
-    take_ownership(s);
+    {
+        let s1 = String::from("Hello");
+        let len = calculate_length(&s1); // 引用 s1，但是并不拥有 s1
+        println!("{}, {}", s1, len);
 
-    let x = 15;
-    makes_copy(x);
-    println!("{}", x);
+        fn calculate_length(s: &String) -> usize {
+            // 这里的参数 & 就是借用（借用就是把引用当作函数参数）
+            // s.push_str(", world"); // error 借用默认也是不可变的
+            s.len()
+        }
+    }
 
     {
-        // 函数返回值过程中也会发生所有权转移
-        let a1 = gives_ownership(); // some_thing 所有权移动给了 a1
-        let a2 = String::from("Hello");
-        let a3 = takes_and_gives_back(a2); // a_string 所有权移动给了 a3
+        // 可变引用
+        let mut s1 = String::from("Hello");
+        let len = calculate_length(&mut s1); // 引用 s1，但是并不拥有 s1
+        println!("{}, {}", s1, len);
 
-        fn gives_ownership() -> String {
-            let some_thing = String::from("Hello");
-            some_thing
+        fn calculate_length(s: &mut String) -> usize {
+            // 这里的参数 & 就是借用（借用就是把引用当作函数参数）
+            s.push_str(", world"); // error 借用默认也是不可变的
+            s.len()
         }
+    }
 
-        fn takes_and_gives_back(a_string: String) -> String {
-            a_string
+    // {
+    //     // 可变引用(&mut)只能有一个，防止数据竞争
+    //     let mut s = String::from("Hello world");
+    //     let s1 = &mut s;
+    //     // let s2 = &mut s;
+    // }
+
+    {
+        // 创建新的作用域，允许非同时创建多个可变引用
+        let mut c = String::from("Hello world");
+        {
+            let c1 = &mut c;
         }
-    } // a1、a3 离开了作用域被销毁，a2所有权被移动了，在这里是安全的
+        let c2 = &mut c;
+    }
 
-    // 变量所有权在赋值过程中会发生移动
-    // 当一个包含 heap 数据的变量离开作用域，它的值会被 drop 函数清理，除非所有权移动到了另一个变量上
+    // 不可同时拥有可变引用和不可变引用
+    let mut d = String::from("Hello world");
+    let d1 = &d;
+    let d2 = &mut d; // error
+    println!("{}, {}", d1, d2);
+
+    // 保证引用永远都不是悬空引用
+    // dangle();
 }
 
-fn take_ownership(some_thing: String) {
-    println!("{}", some_thing);
-}
+// fn dangle() -> &String {
+//     let s = String::from("hello");
+//     &s
+// }
 
-fn makes_copy(some_number: i32) {
-    println!("{}", some_number);
-}
+// 规则
+// 1. 一个可变的引用 / 任意数量的不可变引用
+// 2. 引用一直有效
