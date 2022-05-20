@@ -33,6 +33,64 @@ fn main() {
     };
 
     let black = Color(0, 0, 0);
+
+    let w = 500;
+    let h = 100;
+    println!("{}", area(w, h));
+
+    let rect = (100, 30);
+    println!("{}", area_tuple(rect));
+
+    let rect = Rect {
+        width: 200,
+        height: 300,
+    };
+    println!("{}", area_struct(&rect));
+    // 调用方法时，rust 会自动添加 & &mut *，以便对象可以匹配方法的签名
+    println!("{}", rect.area());
+    // 输出格式化
+    println!("{:#?}", rect);
+    println!("{:?}", rect);
+
+    // 关联函数调用，类似JS的静态函数
+    let rect1 = Rect::square(66);
+    println!("{:?}", rect1);
+}
+
+fn area(width: u32, height: u32) -> u32 {
+    width * height
+}
+
+// 元组形式
+fn area_tuple(rect: (u32, u32)) -> u32 {
+    rect.0 * rect.1
+}
+
+// 结构体
+#[derive(Debug)]
+struct Rect {
+    width: u32,
+    height: u32,
+}
+
+// 结构体方法
+impl Rect {
+    // 带有 self 的就是方法
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+    // 关联函数
+    fn square(size: u32) -> Rect {
+        Rect {
+            width: size,
+            height: size,
+        }
+    }
+}
+
+// 结构体形式
+fn area_struct(rect: &Rect) -> u32 {
+    rect.width * rect.height
 }
 
 // 作为函数返回值
